@@ -106,10 +106,10 @@
 <body>
   <div id="modal"></div>
   <div id='mobile-buttons'>
-    <div id='mobile-left' onclick='changeDirection(0);'></div>
-    <div id='mobile-right' onclick='changeDirection(1);'></div>
-    <div id='mobile-up' onclick='changeDirection(3);'></div>
-    <div id='mobile-down' onclick='changeDirection(2);'></div>
+    <div id='mobile-left' onclick='snakeGame.changeDirection(0);'></div>
+    <div id='mobile-right' onclick='snakeGame.changeDirection(1);'></div>
+    <div id='mobile-up' onclick='snakeGame.changeDirection(3);'></div>
+    <div id='mobile-down' onclick='snakeGame.changeDirection(2);'></div>
   </div>
   <div class="grid-container"></div>
   <div id='scoreboard'>Snek Souls</div>
@@ -272,7 +272,7 @@
                 snakePosition--;
               }
             } else {
-              moveSnake();
+              _game.moveSnake();
             }
             break;
           }
@@ -285,7 +285,7 @@
                 snakePosition++;
               }
             } else {
-              moveSnake();
+              _game.moveSnake();
             }
             break;
           }
