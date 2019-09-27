@@ -5,8 +5,12 @@
   <meta name="author" content="Manos Paterakis">
   <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAwUlEQVQ4T2NkwAPKN4X+xybd6beaESYOZ6ArhGneVHuPwa9ZCas1IIMwDLir5wK2dVaLID7HgeVwGqB8aQ9Ol5VtDnFm/M+4h6AXiA0bnDaRbQAs8JBDGlcAg8ThLiBGI8wg5OgFGwAT4PzBwN4QtvoXoeDHaQCys9ETES45RmSFMEWEUiCKC9ANwKUZ5i2QJUQbgM1FeA1ADzxCXoJHIyl+RrYEJS8gG/L///+qLv817ciKKzaHlv7/z9CFHBYgNgCZbnxwXEj+WgAAAABJRU5ErkJggg==">
   <style>
+    body {
+      /* Prevent drag-to-reload */
+      overflow-y: hidden;
+    }
+
     .grid-container {
-      /*position: absolute;*/
       display: grid;
       position: absolute;
       box-shadow: 0px 0px 25px 5px black;
@@ -29,29 +33,26 @@
       position: fixed;
       z-index: 999;
       padding: 5px;
-      font-family: 'Arial';
-      font-weight: bold;
+      font: bold 15px Arial;
+      border: 1px solid black;
       border-radius: 3px;
-      border-color: black;
-      border-style: solid;
-      border-width: 1px;
       background: rgba(255,255,255, 0.6);
     }
 
     #modal {
+      position: fixed;
+      z-index: 99;
       background: lightcyan;
       text-align: center;
       width: 300px;
       height: 450px;
-      position: fixed;
       display: block;
-      margin: 0 auto;
       font-family: 'Arial';
-      z-index: 99;
       box-shadow: 0px 0px 25px 5px black;
       padding: 20px;
       top: 50%;
       left: 50%;
+      margin: 0 auto;
       margin-left: -170px;
       margin-top: -245px;
     }
@@ -62,55 +63,11 @@
       font-size: 20px;
       width: 100px;
     }
-
-    #mobile-buttons {
-      display: none;
-    }
-
-    #mobile-left, #mobile-right, #mobile-up, #mobile-down {
-      background: rgba(0,0,0,0.1);
-      position: fixed;
-      z-index: 98;
-    }
-
-    #mobile-left {
-      top: 15%;
-      left: 0;
-      width: 20%;
-      height: 70%;
-    }
-
-    #mobile-right {
-      top: 15%;
-      right: 0;
-      width: 20%;
-      height: 70%;
-    }
-
-    #mobile-up {
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 13%;
-    }
-
-    #mobile-down {
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 13%;
-    }
   </style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 </head>
 <body>
   <div id="modal"></div>
-  <div id='mobile-buttons'>
-    <div id='mobile-left' onclick='snakeGame.changeDirection(0);'></div>
-    <div id='mobile-right' onclick='snakeGame.changeDirection(1);'></div>
-    <div id='mobile-up' onclick='snakeGame.changeDirection(3);'></div>
-    <div id='mobile-down' onclick='snakeGame.changeDirection(2);'></div>
-  </div>
   <div class="grid-container"></div>
   <div id='scoreboard'>Snek Souls</div>
 </body>
@@ -137,6 +94,9 @@
     var snakeIsDead = false;
     var gridSqRoot = Math.sqrt(gridSize);
     var snakePosition = (gridSize + gridSqRoot) / 2;
+    var touchY = -1;
+    var touchX = -1;
+    var snakeMoving = false;
 
     // Adjust the game grid to the window
     window.addEventListener("resize", function(e) {
@@ -154,25 +114,62 @@
       _game.resetModal();
     });
 
+    // Detect touch start (for swipe)
+    document.addEventListener("touchstart", function(e) {
+      touchX = e.touches[0].pageX;
+      touchY = e.touches[0].pageY;
+    });
+
+    // Change direction on touch end (for swipe)
+    document.addEventListener("touchend", function(e) {
+      // Calculate swipe
+      var swipeX = touchX - e.changedTouches[0].pageX;
+      var swipeY = touchY - e.changedTouches[0].pageY;
+
+      // If swipe was significant enough
+      if (Math.abs(swipeX) > window.innerWidth / 10 || Math.abs(swipeY) > window.innerHeight / 10) {
+        // If X swipe was bigger than Y swipe
+        if (Math.abs(swipeX) > Math.abs(swipeY)) {
+          // Horizontal swipe
+          if (swipeX > 0) {
+            // Left swipe
+            _game.changeDirection(0);
+          } else {
+            // Right swipe
+            _game.changeDirection(1);
+          }
+        } else {
+          // Vertical swipe
+          if (swipeY > 0) {
+            // Up swipe
+            _game.changeDirection(3);
+          } else {
+            // Down swipe
+            _game.changeDirection(2);
+          }
+        }
+      };
+    });
+
     // Change direction on key press
     document.addEventListener("keydown", function(e) {
       if (e.keyCode == '38') {
-          // up arrow
-          _game.changeDirection(3);
-        }
-        else if (e.keyCode == '40') {
-          // down arrow
-          _game.changeDirection(2);
-        }
-        else if (e.keyCode == '37') {
-         // left arrow
-         _game.changeDirection(0);
-       }
-       else if (e.keyCode == '39') {
-         // right arrow
-         _game.changeDirection(1);
-       }
-     });
+        // up arrow
+        _game.changeDirection(3);
+      }
+      else if (e.keyCode == '40') {
+        // down arrow
+        _game.changeDirection(2);
+      }
+      else if (e.keyCode == '37') {
+        // left arrow
+        _game.changeDirection(0);
+      }
+      else if (e.keyCode == '39') {
+        // right arrow
+        _game.changeDirection(1);
+      }
+    });
 
     // Resize grid
     function resizeGrid() {
@@ -261,6 +258,7 @@
 
       // Move snake to a new tile
       moveSnake: function() {
+        snakeMoving = true;
         previousPos = snakePosition;
         switch (direction) {
           // left
@@ -312,6 +310,7 @@
         // Update snake tail
         snakeTail.unshift(previousPos);
         snakeTail.pop();
+        snakeMoving = false;
       },
 
       // Change snake direction
@@ -371,21 +370,24 @@
 
       // Check for legal move
       checkLegalMove: function(newDirection) {
+        if (snakeMoving) {
+          return false;
+        }
         var legalMove = true;
         // left
-        if (newDirection === 0 && (snakeTail[0] === snakePosition-1 || snakeTail[0] === snakePosition+5)) {
+        if (newDirection === 0 && (snakeTail[0] === snakePosition-1 || snakeTail[0] === snakePosition+gridSqRoot-1)) {
           legalMove = false;
         }
         // right
-        if (newDirection === 1 && (snakeTail[0] === snakePosition+1 || snakeTail[0] === snakePosition-5)) {
+        if (newDirection === 1 && (snakeTail[0] === snakePosition+1 || snakeTail[0] === snakePosition-gridSqRoot+1)) {
           legalMove = false;
         }
         // down
-        if (newDirection === 2 && (snakeTail[0] === snakePosition+6 || snakeTail[0] === snakePosition-30)) {
+        if (newDirection === 2 && (snakeTail[0] === snakePosition+gridSqRoot || snakeTail[0] === snakePosition- gridSize+gridSqRoot)) {
           legalMove = false;
         }
         // up
-        if (newDirection === 3 && (snakeTail[0] === snakePosition-6 || snakeTail[0] === snakePosition+30)) {
+        if (newDirection === 3 && (snakeTail[0] === snakePosition-gridSqRoot || snakeTail[0] === snakePosition+gridSize-gridSqRoot)) {
           legalMove = false;
         }
         return legalMove;
@@ -394,10 +396,6 @@
       // Hide modal
       hideModal: function() {
         document.getElementById('modal').style.display = 'none';
-
-        if (touchDevice) {
-          document.getElementById('mobile-buttons').style.display = 'inherit';
-        }
 
         // Reset values
         snakeIsDead = false;
@@ -420,7 +418,7 @@
 
       // Reset modal
       resetModal: function() {
-        document.getElementById('modal').innerHTML = "<h1 class=\"font-weight-bold\">How to play</h1><h2 class=\"font-weight-bold\">Keyboard Buttons</h2><div>Press Up-Down-Right-Left arrows to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Touchscreen Buttons</h2><div>Tap the black hotspots to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Game goal</h2><div>Try eating the food blocks (yellow) to get as big as possible</div><br><button onclick='snakeGame.hideModal();'>Start</button>";
+        document.getElementById('modal').innerHTML = "<h1 class=\"font-weight-bold\">How to play</h1><h2 class=\"font-weight-bold\">Keyboard Buttons</h2><div>Press Up-Down-Right-Left arrows to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Touchscreen Buttons</h2><div>Swipe on the screen to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Game goal</h2><div>Try eating the food blocks (yellow) to get as big as possible</div><br><button onclick='snakeGame.hideModal();'>Start</button>";
       }
     }
 
