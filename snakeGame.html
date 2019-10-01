@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SNEK SOULS</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <meta name="author" content="Manos Paterakis">
   <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAwUlEQVQ4T2NkwAPKN4X+xybd6beaESYOZ6ArhGneVHuPwa9ZCas1IIMwDLir5wK2dVaLID7HgeVwGqB8aQ9Ol5VtDnFm/M+4h6AXiA0bnDaRbQAs8JBDGlcAg8ThLiBGI8wg5OgFGwAT4PzBwN4QtvoXoeDHaQCys9ETES45RmSFMEWEUiCKC9ANwKUZ5i2QJUQbgM1FeA1ADzxCXoJHIyl+RrYEJS8gG/L///+qLv817ciKKzaHlv7/z9CFHBYgNgCZbnxwXEj+WgAAAABJRU5ErkJggg==">
+  <title>SNEK SOULS</title>
   <style>
     body {
       /* Prevent drag-to-reload */
@@ -64,366 +66,365 @@
       width: 100px;
     }
   </style>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 </head>
 <body>
   <div id="modal"></div>
   <div class="grid-container"></div>
   <div id='scoreboard'>Snek Souls</div>
-</body>
-<script type="text/javascript">
-  var snakeGame = (function() {
-    // Editable variables
-    var snakeColor = 'green';
-    var snakeHeadColor = 'darkgreen';
-    var foodColor = 'yellow';
-    var biteColor = 'red';
-    var gridSize = 49;
-    var scoreIncrement = 50;
-    var interval = 750;
+  <script>
+    var snakeGame = (function() {
+      // Editable variables
+      var snakeColor = 'green';
+      var snakeHeadColor = 'darkgreen';
+      var foodColor = 'yellow';
+      var biteColor = 'red';
+      var gridSize = 49;
+      var scoreIncrement = 50;
+      var interval = 750;
 
-    // Uneditable variables
-    var grid = document.getElementsByClassName("grid-container")[0];
-    var direction = -1;
-    var foodPosition = -1;
-    var lastFoodEaten = true;
-    var score = 0;
-    var touchDevice = false;
-    var snakeTail = new Array();
-    var previousPos = -1;
-    var snakeIsDead = false;
-    var gridSqRoot = Math.sqrt(gridSize);
-    var snakePosition = (gridSize + gridSqRoot) / 2;
-    var touchY = -1;
-    var touchX = -1;
-    var snakeMoving = false;
+      // Uneditable variables
+      var grid = document.getElementsByClassName("grid-container")[0];
+      var direction = -1;
+      var foodPosition = -1;
+      var lastFoodEaten = true;
+      var score = 0;
+      var touchDevice = false;
+      var snakeTail = new Array();
+      var previousPos = -1;
+      var snakeIsDead = false;
+      var gridSqRoot = Math.sqrt(gridSize);
+      var snakePosition = (gridSize + gridSqRoot) / 2;
+      var touchY = -1;
+      var touchX = -1;
+      var snakeMoving = false;
 
-    // Adjust the game grid to the window
-    window.addEventListener("resize", function(e) {
-      resizeGrid();
-    });  
-    window.addEventListener("load", function(e) {
-      // Set random background color [https://css-tricks.com/snippets/javascript/random-hex-color/]
-      document.body.style.background =  '#' + Math.floor(Math.random()*16777215).toString(16);
-      createCSScolumns();
-      createBlocks();
-      resizeGrid();
-      if (is_touch_device()) {
-        touchDevice = true;
-      }
-      _game.resetModal();
-    });
+      // Adjust the game grid to the window
+      window.addEventListener("resize", function(e) {
+        resizeGrid();
+      });  
+      window.addEventListener("load", function(e) {
+        // Set random background color [https://css-tricks.com/snippets/javascript/random-hex-color/]
+        document.body.style.background =  '#' + Math.floor(Math.random()*16777215).toString(16);
+        createCSScolumns();
+        createBlocks();
+        resizeGrid();
+        if (is_touch_device()) {
+          touchDevice = true;
+        }
+        _game.resetModal();
+      });
 
-    // Detect touch start (for swipe)
-    document.addEventListener("touchstart", function(e) {
-      touchX = e.touches[0].pageX;
-      touchY = e.touches[0].pageY;
-    });
+      // Detect touch start (for swipe)
+      document.addEventListener("touchstart", function(e) {
+        touchX = e.touches[0].pageX;
+        touchY = e.touches[0].pageY;
+      });
 
-    // Change direction on touch end (for swipe)
-    document.addEventListener("touchend", function(e) {
-      // Calculate swipe
-      var swipeX = touchX - e.changedTouches[0].pageX;
-      var swipeY = touchY - e.changedTouches[0].pageY;
+      // Change direction on touch end (for swipe)
+      document.addEventListener("touchend", function(e) {
+        // Calculate swipe
+        var swipeX = touchX - e.changedTouches[0].pageX;
+        var swipeY = touchY - e.changedTouches[0].pageY;
 
-      // If swipe was significant enough
-      if (Math.abs(swipeX) > window.innerWidth / 10 || Math.abs(swipeY) > window.innerHeight / 10) {
-        // If X swipe was bigger than Y swipe
-        if (Math.abs(swipeX) > Math.abs(swipeY)) {
-          // Horizontal swipe
-          if (swipeX > 0) {
-            // Left swipe
-            _game.changeDirection(0);
+        // If swipe was significant enough
+        if (Math.abs(swipeX) > window.innerWidth / 10 || Math.abs(swipeY) > window.innerHeight / 10) {
+          // If X swipe was bigger than Y swipe
+          if (Math.abs(swipeX) > Math.abs(swipeY)) {
+            // Horizontal swipe
+            if (swipeX > 0) {
+              // Left swipe
+              _game.changeDirection(0);
+            } else {
+              // Right swipe
+              _game.changeDirection(1);
+            }
           } else {
-            // Right swipe
-            _game.changeDirection(1);
+            // Vertical swipe
+            if (swipeY > 0) {
+              // Up swipe
+              _game.changeDirection(3);
+            } else {
+              // Down swipe
+              _game.changeDirection(2);
+            }
           }
+        };
+      });
+
+      // Change direction on key press
+      document.addEventListener("keydown", function(e) {
+        if (e.keyCode == '38') {
+          // up arrow
+          _game.changeDirection(3);
+        }
+        else if (e.keyCode == '40') {
+          // down arrow
+          _game.changeDirection(2);
+        }
+        else if (e.keyCode == '37') {
+          // left arrow
+          _game.changeDirection(0);
+        }
+        else if (e.keyCode == '39') {
+          // right arrow
+          _game.changeDirection(1);
+        }
+      });
+
+      // Resize grid
+      function resizeGrid() {
+        if (window.innerWidth > window.innerHeight) {
+          grid.style.width = window.innerHeight + 'px';
+          grid.style.height = '';
+          grid.style.marginLeft = (window.innerWidth - grid.clientWidth)/2 + 'px';
+          grid.style.marginTop = 0;
         } else {
-          // Vertical swipe
-          if (swipeY > 0) {
-            // Up swipe
-            _game.changeDirection(3);
+          grid.style.height = window.innerWidth + 'px';
+          grid.style.width = '';
+          grid.style.marginTop = (window.innerHeight - grid.clientHeight)/2 + 'px';
+          grid.style.marginLeft = 0;
+        }
+      }
+
+      // Create grid blocks
+      function createBlocks() {
+        for (var i = 0; i < gridSize; i++) {
+          var blockDiv = document.createElement("div");
+          blockDiv.id = 'block' + i;
+          grid.appendChild(blockDiv);
+        }
+      }
+
+      // Create columns with CSS
+      function createCSScolumns() {
+        var columnsString = '';
+        for (var i = 0; i < gridSqRoot; i++) {
+          columnsString+= (100/gridSqRoot) + '% ';
+        }
+        grid.style.gridTemplateColumns = columnsString;
+      }
+
+      // Check if touch device [https://ctrlq.org/code/19616-detect-touch-screen-javascript]
+      function is_touch_device() {
+        return (('ontouchstart' in window)
+          || (navigator.MaxTouchPoints > 0)
+          || (navigator.msMaxTouchPoints > 0));
+      }
+
+      var _game = {
+
+        getInterval: function() {
+          return interval;
+        },
+
+        setInterval: function(val) {
+          interval = val;
+        },
+
+        // Draw the snake on the grid
+        drawBoard: function() {
+          for (var i = 0; i < grid.children.length; i++) {
+            grid.children[i].style.background = '';
+          }
+          // Draw tail
+          for (var i = 0; i < snakeTail.length; i++) {
+            document.getElementById('block' + snakeTail[i]).style.background = snakeColor;
+          }
+          // Draw snake head
+          if (!snakeIsDead) {
+            document.getElementById('block' + snakePosition).style.background = snakeHeadColor;
           } else {
-            // Down swipe
-            _game.changeDirection(2);
+            document.getElementById('block' + snakePosition).style.background = biteColor;
           }
-        }
-      };
-    });
+          // Draw food
+          document.getElementById('block' + foodPosition).style.background = foodColor;
+          // Draw score
+          document.getElementById('scoreboard').textContent = 'Souls = ' + score;
+        },
 
-    // Change direction on key press
-    document.addEventListener("keydown", function(e) {
-      if (e.keyCode == '38') {
-        // up arrow
-        _game.changeDirection(3);
-      }
-      else if (e.keyCode == '40') {
-        // down arrow
-        _game.changeDirection(2);
-      }
-      else if (e.keyCode == '37') {
-        // left arrow
-        _game.changeDirection(0);
-      }
-      else if (e.keyCode == '39') {
-        // right arrow
-        _game.changeDirection(1);
-      }
-    });
+        // Play a round
+        play: function() {
+          _game.moveSnake();
+          _game.checkForDeath();
+          _game.tryToEatFood();
+          if (lastFoodEaten) {
+            _game.placeFood();
+          }
+          _game.drawBoard();
+          if (!snakeIsDead) {
+            setTimeout(_game.play,_game.getInterval());
+          }
+        },
 
-    // Resize grid
-    function resizeGrid() {
-      if (window.innerWidth > window.innerHeight) {
-        grid.style.width = window.innerHeight + 'px';
-        grid.style.height = '';
-        grid.style.marginLeft = (window.innerWidth - grid.clientWidth)/2 + 'px';
-        grid.style.marginTop = 0;
-      } else {
-        grid.style.height = window.innerWidth + 'px';
-        grid.style.width = '';
-        grid.style.marginTop = (window.innerHeight - grid.clientHeight)/2 + 'px';
-        grid.style.marginLeft = 0;
-      }
-    }
-
-    // Create grid blocks
-    function createBlocks() {
-      for (var i = 0; i < gridSize; i++) {
-        var blockDiv = document.createElement("div");
-        blockDiv.id = 'block' + i;
-        grid.appendChild(blockDiv);
-      }
-    }
-
-    // Create columns with CSS
-    function createCSScolumns() {
-      var columnsString = '';
-      for (var i = 0; i < gridSqRoot; i++) {
-        columnsString+= (100/gridSqRoot) + '% ';
-      }
-      grid.style.gridTemplateColumns = columnsString;
-    }
-
-    // Check if touch device [https://ctrlq.org/code/19616-detect-touch-screen-javascript]
-    function is_touch_device() {
-      return (('ontouchstart' in window)
-        || (navigator.MaxTouchPoints > 0)
-        || (navigator.msMaxTouchPoints > 0));
-    }
-
-    var _game = {
-
-      getInterval: function() {
-        return interval;
-      },
-
-      setInterval: function(val) {
-        interval = val;
-      },
-
-      // Draw the snake on the grid
-      drawBoard: function() {
-        for (var i = 0; i < grid.children.length; i++) {
-          grid.children[i].style.background = '';
-        }
-        // Draw tail
-        for (var i = 0; i < snakeTail.length; i++) {
-          document.getElementById('block' + snakeTail[i]).style.background = snakeColor;
-        }
-        // Draw snake head
-        if (!snakeIsDead) {
-          document.getElementById('block' + snakePosition).style.background = snakeHeadColor;
-        } else {
-          document.getElementById('block' + snakePosition).style.background = biteColor;
-        }
-        // Draw food
-        document.getElementById('block' + foodPosition).style.background = foodColor;
-        // Draw score
-        document.getElementById('scoreboard').textContent = 'Souls = ' + score;
-      },
-
-      // Play a round
-      play: function() {
-        _game.moveSnake();
-        _game.checkForDeath();
-        _game.tryToEatFood();
-        if (lastFoodEaten) {
-          _game.placeFood();
-        }
-        _game.drawBoard();
-        if (!snakeIsDead) {
-          setTimeout(_game.play,_game.getInterval());
-        }
-      },
-
-      // Move snake to a new tile
-      moveSnake: function() {
-        snakeMoving = true;
-        previousPos = snakePosition;
-        switch (direction) {
-          // left
-          case 0: {
-            if (snakePosition >= 0) {
-              if ((snakePosition % gridSqRoot) === 0) {
-                snakePosition += (gridSqRoot - 1);
+        // Move snake to a new tile
+        moveSnake: function() {
+          snakeMoving = true;
+          previousPos = snakePosition;
+          switch (direction) {
+            // left
+            case 0: {
+              if (snakePosition >= 0) {
+                if ((snakePosition % gridSqRoot) === 0) {
+                  snakePosition += (gridSqRoot - 1);
+                } else {
+                  snakePosition--;
+                }
               } else {
-                snakePosition--;
+                _game.moveSnake();
               }
-            } else {
-              _game.moveSnake();
+              break;
             }
-            break;
-          }
-          // right
-          case 1: {
-            if (snakePosition + 1 <= gridSize) {
-              if ((snakePosition % gridSqRoot) === (gridSqRoot - 1)) {
-                snakePosition -= (gridSqRoot - 1);
+            // right
+            case 1: {
+              if (snakePosition + 1 <= gridSize) {
+                if ((snakePosition % gridSqRoot) === (gridSqRoot - 1)) {
+                  snakePosition -= (gridSqRoot - 1);
+                } else {
+                  snakePosition++;
+                }
               } else {
-                snakePosition++;
+                _game.moveSnake();
               }
-            } else {
-              _game.moveSnake();
+              break;
             }
-            break;
-          }
-          // down
-          case 2: {
-            if (snakePosition + gridSqRoot < gridSize) {
-              snakePosition+= gridSqRoot;
-            } else {
-              snakePosition-= (gridSize - gridSqRoot);
+            // down
+            case 2: {
+              if (snakePosition + gridSqRoot < gridSize) {
+                snakePosition+= gridSqRoot;
+              } else {
+                snakePosition-= (gridSize - gridSqRoot);
+              }
+              break;
             }
-            break;
-          }
-          // up
-          case 3: {
-            if (snakePosition - gridSqRoot >= 0) {
-              snakePosition-= gridSqRoot;
-            } else {
-              snakePosition+= (gridSize - gridSqRoot);
+            // up
+            case 3: {
+              if (snakePosition - gridSqRoot >= 0) {
+                snakePosition-= gridSqRoot;
+              } else {
+                snakePosition+= (gridSize - gridSqRoot);
+              }
+              break;
             }
-            break;
+            default: break;
           }
-          default: break;
-        }
-        // Update snake tail
-        snakeTail.unshift(previousPos);
-        snakeTail.pop();
-        snakeMoving = false;
-      },
+          // Update snake tail
+          snakeTail.unshift(previousPos);
+          snakeTail.pop();
+          snakeMoving = false;
+        },
 
-      // Change snake direction
-      changeDirection: function(newDirection) {
-        if (_game.checkLegalMove(newDirection)) {
-          direction = newDirection;
-        }
-      },
-
-      // Try eating food
-      tryToEatFood: function() {
-        // Eat food
-        if (snakePosition === foodPosition) {
-          lastFoodEaten = true;
-          score += scoreIncrement;
-          if (snakeTail.length > 0) {
-            snakeTail.push(snakeTail[snakeTail.length - 1]);
-          } else {
-            snakeTail.unshift(previousPos);
+        // Change snake direction
+        changeDirection: function(newDirection) {
+          if (_game.checkLegalMove(newDirection)) {
+            direction = newDirection;
           }
-          if (score === 150) {
-            interval = 500;
-          } else if (score === 300) {
-            interval = 350;
-          } else if (score === 500) {
-            interval = 250;
-          } else if (score === 750) {
-            interval = 200;
-          } else if (score === 1000) {
-            interval = 175;
-          } else if (score === 1500) {
-            document.getElementById('modal').innerHTML = "<h1>Teriyaki Sauce Chicken Dinner!</h1><button onclick='snakeGame.hideModal();'>Play Again</button>";
+        },
+
+        // Try eating food
+        tryToEatFood: function() {
+          // Eat food
+          if (snakePosition === foodPosition) {
+            lastFoodEaten = true;
+            score += scoreIncrement;
+            if (snakeTail.length > 0) {
+              snakeTail.push(snakeTail[snakeTail.length - 1]);
+            } else {
+              snakeTail.unshift(previousPos);
+            }
+            if (score === 150) {
+              interval = 500;
+            } else if (score === 300) {
+              interval = 350;
+            } else if (score === 500) {
+              interval = 250;
+            } else if (score === 750) {
+              interval = 200;
+            } else if (score === 1000) {
+              interval = 175;
+            } else if (score === 1500) {
+              document.getElementById('modal').innerHTML = "<h1>Teriyaki Sauce Chicken Dinner!</h1><button onclick='snakeGame.hideModal();'>Play Again</button>";
+              snakeIsDead = true;
+              _game.changeDirection(-1);
+              _game.showModal();
+            }
+          }
+        },
+
+        // Place food on the grid
+        placeFood: function() {
+          lastFoodEaten = false;
+          foodPosition = Math.floor(Math.random() * 36);
+          while (foodPosition === snakePosition || snakeTail.indexOf(foodPosition) > -1) {
+            foodPosition = Math.floor(Math.random() * 36);
+          }
+        },
+
+        // Check for death
+        checkForDeath: function() {
+          if (snakeTail.indexOf(snakePosition) > -1) {
             snakeIsDead = true;
             _game.changeDirection(-1);
-            _game.showModal();
+            setTimeout(_game.showModal,2000);
           }
-        }
-      },
+        },
 
-      // Place food on the grid
-      placeFood: function() {
-        lastFoodEaten = false;
-        foodPosition = Math.floor(Math.random() * 36);
-        while (foodPosition === snakePosition || snakeTail.indexOf(foodPosition) > -1) {
-          foodPosition = Math.floor(Math.random() * 36);
-        }
-      },
+        // Check for legal move
+        checkLegalMove: function(newDirection) {
+          if (snakeMoving) {
+            return false;
+          }
+          var legalMove = true;
+          // left
+          if (newDirection === 0 && (snakeTail[0] === snakePosition-1 || snakeTail[0] === snakePosition+gridSqRoot-1)) {
+            legalMove = false;
+          }
+          // right
+          if (newDirection === 1 && (snakeTail[0] === snakePosition+1 || snakeTail[0] === snakePosition-gridSqRoot+1)) {
+            legalMove = false;
+          }
+          // down
+          if (newDirection === 2 && (snakeTail[0] === snakePosition+gridSqRoot || snakeTail[0] === snakePosition- gridSize+gridSqRoot)) {
+            legalMove = false;
+          }
+          // up
+          if (newDirection === 3 && (snakeTail[0] === snakePosition-gridSqRoot || snakeTail[0] === snakePosition+gridSize-gridSqRoot)) {
+            legalMove = false;
+          }
+          return legalMove;
+        },
 
-      // Check for death
-      checkForDeath: function() {
-        if (snakeTail.indexOf(snakePosition) > -1) {
-          snakeIsDead = true;
-          _game.changeDirection(-1);
-          setTimeout(_game.showModal,2000);
-        }
-      },
+        // Hide modal
+        hideModal: function() {
+          document.getElementById('modal').style.display = 'none';
 
-      // Check for legal move
-      checkLegalMove: function(newDirection) {
-        if (snakeMoving) {
-          return false;
-        }
-        var legalMove = true;
-        // left
-        if (newDirection === 0 && (snakeTail[0] === snakePosition-1 || snakeTail[0] === snakePosition+gridSqRoot-1)) {
-          legalMove = false;
-        }
-        // right
-        if (newDirection === 1 && (snakeTail[0] === snakePosition+1 || snakeTail[0] === snakePosition-gridSqRoot+1)) {
-          legalMove = false;
-        }
-        // down
-        if (newDirection === 2 && (snakeTail[0] === snakePosition+gridSqRoot || snakeTail[0] === snakePosition- gridSize+gridSqRoot)) {
-          legalMove = false;
-        }
-        // up
-        if (newDirection === 3 && (snakeTail[0] === snakePosition-gridSqRoot || snakeTail[0] === snakePosition+gridSize-gridSqRoot)) {
-          legalMove = false;
-        }
-        return legalMove;
-      },
+          // Reset values
+          snakeIsDead = false;
+          snakePosition = 21;
+          snakeTail = new Array();
+          interval = 750;
+          score = 0;
+          direction = -1;
+          _game.placeFood();
+          _game.resetModal();
 
-      // Hide modal
-      hideModal: function() {
-        document.getElementById('modal').style.display = 'none';
+          // Start playing
+          _game.play();
+        },
 
-        // Reset values
-        snakeIsDead = false;
-        snakePosition = 21;
-        snakeTail = new Array();
-        interval = 750;
-        score = 0;
-        direction = -1;
-        _game.placeFood();
-        _game.resetModal();
+        // Show modal
+        showModal: function() {
+          document.getElementById('modal').style.display = '';
+        },
 
-        // Start playing
-        _game.play();
-      },
-
-      // Show modal
-      showModal: function() {
-        document.getElementById('modal').style.display = '';
-      },
-
-      // Reset modal
-      resetModal: function() {
-        document.getElementById('modal').innerHTML = "<h1 class=\"font-weight-bold\">How to play</h1><h2 class=\"font-weight-bold\">Keyboard Buttons</h2><div>Press Up-Down-Right-Left arrows to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Touchscreen Buttons</h2><div>Swipe on the screen to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Game goal</h2><div>Try eating the food blocks (yellow) to get as big as possible</div><br><button onclick='snakeGame.hideModal();'>Start</button>";
+        // Reset modal
+        resetModal: function() {
+          document.getElementById('modal').innerHTML = "<h1 class=\"font-weight-bold\">How to play</h1><h2 class=\"font-weight-bold\">Keyboard Buttons</h2><div>Press Up-Down-Right-Left arrows to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Touchscreen Buttons</h2><div>Swipe on the screen to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Game goal</h2><div>Try eating the food blocks (yellow) to get as big as possible</div><br><button onclick='snakeGame.hideModal();'>Start</button>";
+        }
       }
-    }
 
-    return _game;
-  })();
+      return _game;
+    })();
 
-</script>
+  </script>
+</body>
 </html>
