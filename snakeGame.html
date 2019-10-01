@@ -89,7 +89,7 @@
       var lastFoodEaten = true;
       var score = 0;
       var touchDevice = false;
-      var snakeTail = new Array();
+      var snakeTail = [];
       var previousPos = -1;
       var snakeIsDead = false;
       var gridSqRoot = Math.sqrt(gridSize);
@@ -148,7 +148,7 @@
               _game.changeDirection(2);
             }
           }
-        };
+        }
       });
 
       // Change direction on key press
@@ -400,7 +400,7 @@
           // Reset values
           snakeIsDead = false;
           snakePosition = 21;
-          snakeTail = new Array();
+          snakeTail = [];
           interval = 750;
           score = 0;
           direction = -1;
@@ -420,7 +420,7 @@
         resetModal: function() {
           document.getElementById('modal').innerHTML = "<h1 class=\"font-weight-bold\">How to play</h1><h2 class=\"font-weight-bold\">Keyboard Buttons</h2><div>Press Up-Down-Right-Left arrows to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Touchscreen Buttons</h2><div>Swipe on the screen to change your snek's direction</div><br><h2 class=\"font-weight-bold\">Game goal</h2><div>Try eating the food blocks (yellow) to get as big as possible</div><br><button onclick='snakeGame.hideModal();'>Start</button>";
         }
-      }
+      };
 
       return _game;
     })();
